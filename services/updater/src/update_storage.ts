@@ -44,9 +44,7 @@ export const uploadAllToStorage = async (
 		.toSorted((a, b) => Number.parseInt(b.id) - Number.parseInt(a.id));
 	await update(logger, seasonQuestions, SEASON_QUESTIONS_KEY);
 
-	const sortedAll = questions.toSorted(
-		(a, b) => Number.parseInt(b.id) - Number.parseInt(a.id),
-	);
+	const sortedAll = questions.toSorted((a, b) => Number.parseInt(b.id) - Number.parseInt(a.id));
 	await update(logger, sortedAll, ALL_QUESTIONS_KEY);
 
 	logger.info("Completed full storage upload.");
