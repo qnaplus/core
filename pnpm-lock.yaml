@@ -8,11 +8,11 @@ settings:
 catalogs:
   default:
     '@qnaplus/scraper':
-      specifier: ^3.1.6
-      version: 3.1.6
+      specifier: ^3.1.7
+      version: 3.1.7
     '@qnaplus/scraper-strategies':
-      specifier: ^3.1.6
-      version: 3.1.6
+      specifier: ^3.1.7
+      version: 3.1.7
     croner:
       specifier: ^10.0.1
       version: 10.0.1
@@ -79,7 +79,7 @@ importers:
         version: link:../dotenv
       '@qnaplus/scraper':
         specifier: 'catalog:'
-        version: 3.1.6
+        version: 3.1.7
       '@qnaplus/utils':
         specifier: workspace:*
         version: link:../utils
@@ -95,7 +95,7 @@ importers:
     devDependencies:
       '@qnaplus/scraper-strategies':
         specifier: 'catalog:'
-        version: 3.1.6
+        version: 3.1.7
       '@qnaplus/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -158,7 +158,7 @@ importers:
     devDependencies:
       '@qnaplus/scraper':
         specifier: 'catalog:'
-        version: 3.1.6
+        version: 3.1.7
       '@qnaplus/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -179,10 +179,10 @@ importers:
         version: link:../../packages/logger
       '@qnaplus/scraper':
         specifier: 'catalog:'
-        version: 3.1.6
+        version: 3.1.7
       '@qnaplus/scraper-strategies':
         specifier: 'catalog:'
-        version: 3.1.6
+        version: 3.1.7
       '@qnaplus/store':
         specifier: workspace:*
         version: link:../../packages/store
@@ -446,11 +446,11 @@ packages:
 
   '@esbuild-kit/core-utils@3.3.2':
     resolution: {integrity: sha512-sPRAnw9CdSsRmEtnsl2WXWdyquogVpB3yZ3dgwJfe8zrOzTsV7cJvmwrKVa+0ma5BoiGJ+BoqkMvawbayKUsqQ==}
-    deprecated: 'Merged into tsx: https://tsx.is'
+    deprecated: 'Merged into tsx: https://tsx.hirok.io'
 
   '@esbuild-kit/esm-loader@2.6.5':
     resolution: {integrity: sha512-FxEMIkJKnodyA1OaCUoEvbYRkoZlLZ4d/eXFu9Fh8CbBBgP5EmZxrfTRyN0qpXZ4vOvqnE5YdRdcrmUUXuU+dA==}
-    deprecated: 'Merged into tsx: https://tsx.is'
+    deprecated: 'Merged into tsx: https://tsx.hirok.io'
 
   '@esbuild/aix-ppc64@0.25.12':
     resolution: {integrity: sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA==}
@@ -1228,11 +1228,11 @@ packages:
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
-  '@qnaplus/scraper-strategies@3.1.6':
-    resolution: {integrity: sha512-Kkw4LEcsFPONHbC+iFcaBP2Zq1iRmbhQxf8/tUI8FwHOddwvNKG473gTEQc8L78GgrAXucheI9A4kpYzwwh2+g==}
+  '@qnaplus/scraper-strategies@3.1.7':
+    resolution: {integrity: sha512-gcTkI96NfFTcNX33Yn7R9dvlRH8s4ZAMsQtbs1tq82Nl6A0Tsn2la/3weUPiQ03wkunLP22FvppQJiP/7PWqxw==}
 
-  '@qnaplus/scraper@3.1.6':
-    resolution: {integrity: sha512-5gOC6cBJHvBpw1t7as6TVnVWd+dnKezVawblSgp4Ry4zNLrRR8uXRmH/mL1NR0CZ9u7MIDD/6+upSc8CUacyJQ==}
+  '@qnaplus/scraper@3.1.7':
+    resolution: {integrity: sha512-LaHTgufwpC3lPNvXSksSjXf5fbqbMlCNLWE79Be4X+kb5rm+akySpb1ZZehCW6FC4KJaZ7k0lBkLb7sIkFLleg==}
 
   '@sapphire/async-queue@1.5.5':
     resolution: {integrity: sha512-cvGzxbba6sav2zZkH8GPf2oGk9yYoD5qrNWdu9fRehifgnFZJMV+nuy2nON2roRO4yQQ+v7MK/Pktl/HgfsUXg==}
@@ -3289,9 +3289,9 @@ snapshots:
 
   '@pinojs/redact@0.4.0': {}
 
-  '@qnaplus/scraper-strategies@3.1.6':
+  '@qnaplus/scraper-strategies@3.1.7':
     dependencies:
-      '@qnaplus/scraper': 3.1.6
+      '@qnaplus/scraper': 3.1.7
       cycletls: 2.0.5
       header-generator: 2.1.82
       pino: 10.3.1
@@ -3301,7 +3301,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@qnaplus/scraper@3.1.6':
+  '@qnaplus/scraper@3.1.7':
     dependencies:
       '@crawlee/core': 3.16.0
       cheerio: 1.2.0
