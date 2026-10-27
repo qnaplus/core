@@ -28,6 +28,28 @@ const get = async (key: string, logger: Logger): Promise<Question[] | null> => {
 	return parsedData;
 };
 
+export const uploadAllToStorage = async (
+	questions: Question[],
+	{ currentSeason }: Metadata,
+	_logger: Logger,
+) => {
+	const logger = _logger.child({ label: "upload_all_to_storage" });
+	logger.info("Starting full storage upload.");
+
+	const ALL_QUESTIONS_KEY = `questions-${getenv("NODE_ENV")}.json`;
+	const SEASON_QUESTIONS_KEY = `questions-${getenv("NODE_ENV")}-${currentSeason}.json`;
+
+	const seasonQuestions = questions
+		.filter((q) => q.season === currentSeason)
+		.toSorted((a, b) => Number.parseInt(b.id) - Number.parseInt(a.id));
+	await update(logger, seasonQuestions, SEASON_QUESTIONS_KEY);
+
+	const sortedAll = questions.toSorted((a, b) => Number.parseInt(b.id) - Number.parseInt(a.id));
+	await update(logger, sortedAll, ALL_QUESTIONS_KEY);
+
+	logger.info("Completed full storage upload.");
+};
+
 export const updateStorage = async (
 	updates: Question[],
 	{ currentSeason }: Metadata,
