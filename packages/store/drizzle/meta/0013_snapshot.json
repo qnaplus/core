@@ -1,6 +1,6 @@
 {
-  "id": "e1c8c1f9-892d-483d-bca1-9537ca023ada",
-  "prevId": "7e0d990b-a64d-4773-ab20-0443f2b25fe7",
+  "id": "6c7f1bf5-237f-4fb0-8006-412c8b3ce549",
+  "prevId": "bc7b70f0-f6b3-4bd8-8052-0f88331fd905",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -137,6 +137,142 @@
       "name": "questions",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "program": {
+          "name": "program",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "season": {
+          "name": "season",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "question": {
+          "name": "question",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "questionRaw": {
+          "name": "questionRaw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "answer": {
+          "name": "answer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "answerRaw": {
+          "name": "answerRaw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "askedTimestamp": {
+          "name": "askedTimestamp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "askedTimestampMs": {
+          "name": "askedTimestampMs",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "answeredTimestamp": {
+          "name": "answeredTimestamp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NULL"
+        },
+        "answeredTimestampMs": {
+          "name": "answeredTimestampMs",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "answered": {
+          "name": "answered",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.recf_metadata": {
+      "name": "recf_metadata",
+      "schema": "",
+      "columns": {
+        "program": {
+          "name": "program",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "start": {
+          "name": "start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.recf_questions": {
+      "name": "recf_questions",
+      "schema": "",
+      "columns": {
         "uuid": {
           "name": "uuid",
           "type": "uuid",
@@ -240,51 +376,31 @@
           "type": "text[]",
           "primaryKey": false,
           "notNull": true
-        },
-        "source": {
-          "name": "source",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'vex'"
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "questions_program_id_unique": {
-          "name": "questions_program_id_unique",
-          "nullsNotDistinct": false,
+      "indexes": {
+        "recf_questions_program_id_unique": {
+          "name": "recf_questions_program_id_unique",
           "columns": [
-            "program",
-            "id"
-          ]
+            {
+              "expression": "program",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": true
-    },
-    "public.recf_metadata": {
-      "name": "recf_metadata",
-      "schema": "",
-      "columns": {
-        "program": {
-          "name": "program",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "start": {
-          "name": "start",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        }
-      },
-      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -295,10 +411,10 @@
   },
   "enums": {},
   "schemas": {},
+  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
-  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

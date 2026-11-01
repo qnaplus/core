@@ -1,10 +1,6 @@
 import { getenv } from "@qnaplus/dotenv";
-import {
-	type EventQueueItem,
-	type EventQueueType,
-	QuestionSource,
-	type StoredQuestion,
-} from "@qnaplus/store";
+import type { Question } from "@qnaplus/scraper";
+import { type EventQueueItem, type EventQueueType, isRecfProgram } from "@qnaplus/store";
 import { chunk } from "@qnaplus/utils";
 import { capitalizeFirstLetter } from "@sapphire/utilities";
 import { diffSentences } from "diff";
@@ -30,11 +26,11 @@ export const buildQuestionUrl = (id: string) => {
  * renders VEX questions (and routes them by their VEX question number), so
  * RECF questions link to their page on the RECF site instead.
  */
-export const getQuestionLink = (question: StoredQuestion) => {
-	return question.source === QuestionSource.RECF ? question.url : buildQuestionUrl(question.id);
+const getQuestionLink = (question: Question) => {
+	return isRecfProgram(question.program) ? question.url : buildQuestionUrl(question.id);
 };
 
-const baseEmbedDescription = (question: StoredQuestion) => {
+const baseEmbedDescription = (question: Question) => {
 	const { author, askedTimestamp, title } = question;
 	return `Asked by ${author} on ${askedTimestamp}\n${bold("Question")}: ${hyperlink(title, getQuestionLink(question))}`;
 };
@@ -87,7 +83,7 @@ const formats: ChangeFormatMap = {
 			.setFooter({
 				text: after.tags.length > 0 ? `🏷️ ${after.tags.join(", ")}` : "No tags",
 			})
-			.setTitle(`${after.program} Q&A response edited`)
+			.setTitle(`${capitalizeFirstLetter(after.program)} Q&A response edited`)
 			.setDescription(`${description}\n${diffBlocks}`);
 	},
 	forum_change({ before, after }) {

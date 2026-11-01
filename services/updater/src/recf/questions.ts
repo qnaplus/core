@@ -1,16 +1,9 @@
-import { QuestionSource, type StoredQuestion } from "@qnaplus/store";
+import type { Question } from "@qnaplus/scraper";
+import type { RecfProgram } from "@qnaplus/store";
 import { formatDDMMMYYYY } from "@qnaplus/utils";
 import type { Logger } from "pino";
 import type { QuestionDetail } from "recf-api-client/dist/recf-manuals-public-api.schemas";
 import { richTextToPlainText } from "./richtext";
-
-/**
- * The slugs of all RECF programs with a Q&A, as defined by the RECF API's
- * `listPrograms` endpoint. Broadcast channels are keyed by these values.
- */
-export const RECF_PROGRAMS = ["inspire", "achieve", "engage"] as const;
-
-export type RecfProgram = (typeof RECF_PROGRAMS)[number];
 
 const RECF_GAMES_URL = "https://games.recf.org";
 
@@ -23,7 +16,7 @@ const formatTimestamp = (ms: number) => {
 };
 
 /**
- * Maps an RECF Q&A entry to the {@link StoredQuestion} shape shared with VEX
+ * Maps an RECF Q&A entry to the {@link Question} shape shared with VEX
  * questions. Returns `null` (with a warning) when the entry is missing fields
  * qnaplus can't do without.
  *
@@ -31,11 +24,11 @@ const formatTimestamp = (ms: number) => {
  * available, preserving the `answered` implies `answer != null` invariant
  * that answer-edit diffing relies on.
  */
-export const toStoredQuestion = (
+export const toQuestion = (
 	slug: RecfProgram,
 	detail: QuestionDetail,
 	logger: Logger,
-): StoredQuestion | null => {
+): Question | null => {
 	const { qnaNumber, subject, submittedAt } = detail;
 	if (qnaNumber === undefined || subject === undefined || submittedAt === undefined) {
 		logger.warn(
@@ -87,6 +80,5 @@ export const toStoredQuestion = (
 		askedTimestampMs,
 		...answerFields,
 		tags: detail.tags ?? [],
-		source: QuestionSource.RECF,
 	};
 };

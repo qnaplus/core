@@ -5,12 +5,7 @@ import { and, eq, getTableColumns, gte, inArray, or, sql } from "drizzle-orm";
 import { type PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
-import {
-	type EventQueueAggregation,
-	EventQueueType,
-	QuestionSource,
-	type StoredQuestion,
-} from "./schema_types";
+import { type EventQueueAggregation, EventQueueType } from "./schema_types";
 
 const pg = lazy(() => postgres(getenv("SUPABASE_TRANSACTION_URL")));
 export const db = lazy(() => drizzle({ schema, client: pg() }));
@@ -30,14 +25,9 @@ export const testConnection = async (d: PostgresJsDatabase<typeof schema> = db()
 
 export const getQuestion = async (
 	id: Question["id"],
-	source: QuestionSource = QuestionSource.VEX,
 	d: PostgresJsDatabase<typeof schema> = db(),
 ) => {
-	return trycatch(() =>
-		d.query.questions.findFirst({
-			where: and(eq(schema.questions.id, id), eq(schema.questions.source, source)),
-		}),
-	);
+	return trycatch(() => d.query.questions.findFirst({ where: eq(schema.questions.id, id) }));
 };
 
 export const getAllQuestions = async (d: PostgresJsDatabase<typeof schema> = db()) => {
@@ -78,7 +68,7 @@ export const getAnsweredQuestionsNewerThanDate = async (
 };
 
 export const insertQuestions = async (
-	data: StoredQuestion[],
+	data: Question[],
 	d: PostgresJsDatabase<typeof schema> = db(),
 ) => {
 	return trycatch(() => d.insert(schema.questions).values(data));
@@ -101,17 +91,24 @@ const EXCLUDED_QUESTION = {
 	answeredTimestampMs: sql`excluded."answeredTimestampMs"`,
 	answered: sql`excluded.answered`,
 	tags: sql`excluded.tags`,
-	source: sql`excluded.source`,
 };
 
-const QUESTION_UPDATED_QUERY = or(
-	sql`${schema.questions.question} != excluded.question`,
-	sql`${schema.questions.answer} IS DISTINCT FROM excluded.answer`,
-	sql`${schema.questions.answered} != excluded.answered`,
-);
+type QuestionTable = typeof schema.questions | typeof schema.recf_questions;
+
+/**
+ * Restricts an upsert to rows whose content actually changed, so the event
+ * queue triggers only fire for meaningful updates.
+ */
+const questionUpdatedQuery = (table: QuestionTable) => {
+	return or(
+		sql`${table.question} != excluded.question`,
+		sql`${table.answer} IS DISTINCT FROM excluded.answer`,
+		sql`${table.answered} != excluded.answered`,
+	);
+};
 
 export const updateQuestions = async (
-	data: StoredQuestion[],
+	data: Question[],
 	d: PostgresJsDatabase<typeof schema> = db(),
 ) => {
 	return trycatch(() =>
@@ -119,9 +116,30 @@ export const updateQuestions = async (
 			.insert(schema.questions)
 			.values(data)
 			.onConflictDoUpdate({
-				target: [schema.questions.program, schema.questions.id],
+				target: schema.questions.id,
 				set: EXCLUDED_QUESTION,
-				setWhere: QUESTION_UPDATED_QUERY,
+				setWhere: questionUpdatedQuery(schema.questions),
+			})
+			.returning(),
+	);
+};
+
+/**
+ * Upserts questions from the RECF Q&A. Rows share the {@link Question} shape
+ * of VEX questions, so the same event queue trigger handles their updates.
+ */
+export const updateRecfQuestions = async (
+	data: Question[],
+	d: PostgresJsDatabase<typeof schema> = db(),
+) => {
+	return trycatch(() =>
+		d
+			.insert(schema.recf_questions)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [schema.recf_questions.program, schema.recf_questions.id],
+				set: EXCLUDED_QUESTION,
+				setWhere: questionUpdatedQuery(schema.recf_questions),
 			})
 			.returning(),
 	);
@@ -193,7 +211,7 @@ export const getReplayEvents = async (d: PostgresJsDatabase<typeof schema> = db(
 };
 
 export const insertReplayEvents = async (
-	questions: StoredQuestion[],
+	questions: Question[],
 	d: PostgresJsDatabase<typeof schema> = db(),
 ) => {
 	const events = questions.map((question) => ({
@@ -211,20 +229,32 @@ export const clearReplayEvents = async (d: PostgresJsDatabase<typeof schema> = d
 	);
 };
 
-export const getAllPrograms = async (
-	source: QuestionSource,
-	d: PostgresJsDatabase<typeof schema> = db(),
-) => {
+export const getAllPrograms = async (d: PostgresJsDatabase<typeof schema> = db()) => {
 	return trycatch(() =>
-		d
-			.selectDistinct({ program: schema.questions.program })
-			.from(schema.questions)
-			.where(eq(schema.questions.source, source)),
+		d.selectDistinct({ program: schema.questions.program }).from(schema.questions),
 	);
 };
 
 export const getForumStates = async (d: PostgresJsDatabase<typeof schema> = db()) => {
 	return trycatch(() => d.select().from(schema.forum_state));
+};
+
+/**
+ * Retrieves the question number the given RECF program's update should start
+ * iterating from, defaulting to 1 when the program has no metadata row. Like
+ * {@link Metadata.start}, this is a manually managed lever for skipping
+ * questions from previous seasons.
+ */
+export const getRecfStart = async (
+	program: string,
+	d: PostgresJsDatabase<typeof schema> = db(),
+) => {
+	return trycatch(async () => {
+		const row = await d.query.recf_metadata.findFirst({
+			where: eq(schema.recf_metadata.program, program),
+		});
+		return row?.start ?? 1;
+	});
 };
 
 export const getAllEtags = async (d: PostgresJsDatabase<typeof schema> = db()) => {
@@ -245,24 +275,6 @@ export const upsertEtag = async (
 				set: { etag, updatedAt: sql`now()` },
 			}),
 	);
-};
-
-/**
- * Retrieves the question number the given RECF program's update should start
- * iterating from, defaulting to 1 when the program has no metadata row. Like
- * {@link Metadata.start}, this is a manually managed lever for skipping
- * questions from previous seasons.
- */
-export const getRecfStart = async (
-	program: string,
-	d: PostgresJsDatabase<typeof schema> = db(),
-) => {
-	return trycatch(async () => {
-		const row = await d.query.recf_metadata.findFirst({
-			where: eq(schema.recf_metadata.program, program),
-		});
-		return row?.start ?? 1;
-	});
 };
 
 export const updateForumStates = async (

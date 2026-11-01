@@ -1,9 +1,10 @@
-import { type StoredQuestion, getRecfStart, updateQuestions } from "@qnaplus/store";
+import type { Question } from "@qnaplus/scraper";
+import { RECF_PROGRAMS, type RecfProgram, getRecfStart, updateRecfQuestions } from "@qnaplus/store";
 import { sleep } from "@qnaplus/utils";
 import type { Logger } from "pino";
 import { getGetQaUrl, getQa } from "recf-api-client";
 import { type EtagCache, requestWithEtag } from "./etag";
-import { RECF_PROGRAMS, type RecfProgram, toStoredQuestion } from "./questions";
+import { toQuestion } from "./questions";
 
 const ITERATIVE_BATCH_COUNT = 10;
 
@@ -25,12 +26,12 @@ const fetchQuestionBatch = async (
 			),
 		),
 	);
-	const questions: StoredQuestion[] = [];
+	const questions: Question[] = [];
 	for (const result of results) {
 		if (result.outcome !== "success") {
 			continue;
 		}
-		const question = toStoredQuestion(slug, result.data.data, logger);
+		const question = toQuestion(slug, result.data.data, logger);
 		if (question !== null) {
 			questions.push(question);
 		}
@@ -56,8 +57,8 @@ export const fetchRecfQuestionsIterative = async (
 	start: number,
 	cache: EtagCache,
 	logger: Logger,
-): Promise<StoredQuestion[]> => {
-	const questions: StoredQuestion[] = [];
+): Promise<Question[]> => {
+	const questions: Question[] = [];
 	let range = [...Array(ITERATIVE_BATCH_COUNT).keys()].map((n) => start + n);
 	while (true) {
 		const batch = await fetchQuestionBatch(slug, range, cache, logger);
@@ -75,7 +76,7 @@ const syncProgram = async (
 	slug: RecfProgram,
 	cache: EtagCache,
 	_logger: Logger,
-): Promise<StoredQuestion[]> => {
+): Promise<Question[]> => {
 	const logger = _logger.child({ program: slug });
 	const [startError, start] = await getRecfStart(slug);
 	if (startError) {
@@ -89,17 +90,17 @@ const syncProgram = async (
 
 /**
  * Pulls new and changed questions from the RECF Q&A of every program in
- * {@link RECF_PROGRAMS} and upserts them into the questions table, where the
- * usual database triggers turn them into notification events.
+ * {@link RECF_PROGRAMS} and upserts them into the recf_questions table, where
+ * the usual event queue trigger turns them into notification events.
  */
 export const updateRecfDatabase = async (
 	cache: EtagCache,
 	_logger: Logger,
-): Promise<StoredQuestion[]> => {
+): Promise<Question[]> => {
 	const logger = _logger.child({ label: "update_recf_database" });
 	logger.info("Starting RECF database update.");
 
-	const questions: StoredQuestion[] = [];
+	const questions: Question[] = [];
 	for (const slug of RECF_PROGRAMS) {
 		questions.push(...(await syncProgram(slug, cache, logger)));
 	}
@@ -108,7 +109,7 @@ export const updateRecfDatabase = async (
 		return [];
 	}
 
-	const [updateError, updates] = await updateQuestions(questions);
+	const [updateError, updates] = await updateRecfQuestions(questions);
 	if (updateError) {
 		logger.error(
 			{ error: updateError },
