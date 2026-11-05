@@ -93,11 +93,19 @@ const EXCLUDED_QUESTION = {
 	tags: sql`excluded.tags`,
 };
 
-const QUESTION_UPDATED_QUERY = or(
-	sql`${schema.questions.question} != excluded.question`,
-	sql`${schema.questions.answer} IS DISTINCT FROM excluded.answer`,
-	sql`${schema.questions.answered} != excluded.answered`,
-);
+type QuestionTable = typeof schema.questions | typeof schema.recf_questions;
+
+/**
+ * Restricts an upsert to rows whose content actually changed, so the event
+ * queue triggers only fire for meaningful updates.
+ */
+const questionUpdatedQuery = (table: QuestionTable) => {
+	return or(
+		sql`${table.question} != excluded.question`,
+		sql`${table.answer} IS DISTINCT FROM excluded.answer`,
+		sql`${table.answered} != excluded.answered`,
+	);
+};
 
 export const updateQuestions = async (
 	data: Question[],
@@ -110,7 +118,28 @@ export const updateQuestions = async (
 			.onConflictDoUpdate({
 				target: schema.questions.id,
 				set: EXCLUDED_QUESTION,
-				setWhere: QUESTION_UPDATED_QUERY,
+				setWhere: questionUpdatedQuery(schema.questions),
+			})
+			.returning(),
+	);
+};
+
+/**
+ * Upserts questions from the RECF Q&A. Rows share the {@link Question} shape
+ * of VEX questions, so the same event queue trigger handles their updates.
+ */
+export const updateRecfQuestions = async (
+	data: Question[],
+	d: PostgresJsDatabase<typeof schema> = db(),
+) => {
+	return trycatch(() =>
+		d
+			.insert(schema.recf_questions)
+			.values(data)
+			.onConflictDoUpdate({
+				target: [schema.recf_questions.program, schema.recf_questions.id],
+				set: EXCLUDED_QUESTION,
+				setWhere: questionUpdatedQuery(schema.recf_questions),
 			})
 			.returning(),
 	);
@@ -208,6 +237,44 @@ export const getAllPrograms = async (d: PostgresJsDatabase<typeof schema> = db()
 
 export const getForumStates = async (d: PostgresJsDatabase<typeof schema> = db()) => {
 	return trycatch(() => d.select().from(schema.forum_state));
+};
+
+/**
+ * Retrieves the question number the given RECF program's update should start
+ * iterating from, defaulting to 1 when the program has no metadata row. Like
+ * {@link Metadata.start}, this is a manually managed lever for skipping
+ * questions from previous seasons.
+ */
+export const getRecfStart = async (
+	program: string,
+	d: PostgresJsDatabase<typeof schema> = db(),
+) => {
+	return trycatch(async () => {
+		const row = await d.query.recf_metadata.findFirst({
+			where: eq(schema.recf_metadata.program, program),
+		});
+		return row?.start ?? 1;
+	});
+};
+
+export const getAllEtags = async (d: PostgresJsDatabase<typeof schema> = db()) => {
+	return trycatch(() => d.select().from(schema.etag_cache));
+};
+
+export const upsertEtag = async (
+	resource: string,
+	etag: string,
+	d: PostgresJsDatabase<typeof schema> = db(),
+) => {
+	return trycatch(() =>
+		d
+			.insert(schema.etag_cache)
+			.values({ resource, etag })
+			.onConflictDoUpdate({
+				target: schema.etag_cache.resource,
+				set: { etag, updatedAt: sql`now()` },
+			}),
+	);
 };
 
 export const updateForumStates = async (

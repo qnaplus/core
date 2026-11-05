@@ -28,7 +28,8 @@
 		"@qnaplus/scraper-strategies": "catalog:",
 		"@qnaplus/store": "workspace:*",
 		"@qnaplus/utils": "workspace:*",
-		"croner": "catalog:"
+		"croner": "catalog:",
+		"recf-api-client": "^0.1.2"
 	},
 	"devDependencies": {
 		"@qnaplus/typescript-config": "workspace:*",

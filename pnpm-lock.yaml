@@ -192,6 +192,9 @@ importers:
       croner:
         specifier: 'catalog:'
         version: 10.0.1
+      recf-api-client:
+        specifier: ^0.1.2
+        version: 0.1.2
     devDependencies:
       '@qnaplus/typescript-config':
         specifier: workspace:*
@@ -2066,6 +2069,9 @@ packages:
 
   real-require@1.0.0:
     resolution: {integrity: sha512-P4nbQYQfePJxRSmY+v/KINxVucm4NF3p3s7pJveMTtom52FR4YGltUQLB8idDXwDDWW+eYrWDFbuzUnjoWHF7g==}
+
+  recf-api-client@0.1.2:
+    resolution: {integrity: sha512-wvSVdYpb1+46gNxkOjKlIt6dL9NcbgxyY+KzhJqRtsCMpMvsf2oYiczkSbs4QdHuIoj1YsGQYrsRe8Iw3o8jXA==}
 
   resolve-alpn@1.2.1:
     resolution: {integrity: sha512-0a1F4l73/ZFZOakJnQ3FvkJ2+gSTQWz/r2KE5OdDY0TxPm5h4GkqkWWfM47T7HsbnOtcJVEF4epCVy6u7Q3K+g==}
@@ -4168,6 +4174,8 @@ snapshots:
   quick-lru@7.3.0: {}
 
   real-require@1.0.0: {}
+
+  recf-api-client@0.1.2: {}
 
   resolve-alpn@1.2.1: {}
 

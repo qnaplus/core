@@ -16,3 +16,4 @@ minimumReleaseAgeExclude:
   - '@qnaplus/scraper-strategies@3.1.8'
   - '@qnaplus/scraper@3.1.8'
   - ts-curl-impersonate@2.0.0-rc.0
+  - recf-api-client@0.1.2
